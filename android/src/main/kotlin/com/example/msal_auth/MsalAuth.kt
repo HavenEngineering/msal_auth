@@ -169,7 +169,10 @@ class MsalAuth(internal val context: Context) {
      */
     internal fun currentAccountCallback(result: MethodChannel.Result): CurrentAccountCallback {
         return object : CurrentAccountCallback {
+            private var isResultSubmitted = false
             override fun onAccountLoaded(activeAccount: IAccount?) {
+                if (isResultSubmitted) return
+                isResultSubmitted = true
                 if (activeAccount == null) {
                     setNoCurrentAccountException(result)
                     return
@@ -178,6 +181,8 @@ class MsalAuth(internal val context: Context) {
             }
 
             override fun onAccountChanged(priorAccount: IAccount?, currentAccount: IAccount?) {
+                if (isResultSubmitted) return
+                isResultSubmitted = true
                 if (currentAccount == null) {
                     setNoCurrentAccountException(result)
                     return
@@ -186,6 +191,8 @@ class MsalAuth(internal val context: Context) {
             }
 
             override fun onError(exception: MsalException) {
+                if (isResultSubmitted) return
+                isResultSubmitted = true
                 setMsalException(exception, result)
             }
         }
