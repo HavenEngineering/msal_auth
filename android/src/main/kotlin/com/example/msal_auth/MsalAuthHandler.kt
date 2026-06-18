@@ -1,5 +1,6 @@
 package com.example.msal_auth
 
+import android.content.Context
 import com.google.gson.Gson
 import com.microsoft.identity.client.AcquireTokenParameters
 import com.microsoft.identity.client.AcquireTokenSilentParameters
@@ -77,6 +78,8 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
             "signOut" -> signOut(result)
 
             "isSharedDevice" -> isSharedDevice(result)
+
+            "clearPersistedAccount" -> clearPersistedAccount(result)
 
             "getAccount" -> {
                 val identifier = call.arguments as String
@@ -307,6 +310,32 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
      * @param methodName the name of the method called.
      * @param result the result of the method call.
      */
+    /**
+     * Clears MSAL's persisted single account from SharedPreferences.
+     * Resolves the "current_account_mismatch" dead loop when the broker
+     * no longer recognizes the stale cached account.
+     *
+     * The SharedPreferences name corresponds to
+     * [SingleAccountPublicClientApplication.SINGLE_ACCOUNT_CREDENTIAL_SHARED_PREFERENCES]
+     * which is a public constant in MSAL Android (verified in v6.0.1).
+     *
+     * @see <a href="https://github.com/AzureAD/microsoft-authentication-library-for-android/blob/master/msal/src/main/java/com/microsoft/identity/client/SingleAccountPublicClientApplication.java">SingleAccountPublicClientApplication source</a>
+     */
+    private fun clearPersistedAccount(result: MethodChannel.Result) {
+        try {
+            val prefsName = SingleAccountPublicClientApplication.SINGLE_ACCOUNT_CREDENTIAL_SHARED_PREFERENCES
+            val prefs = msal.context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
+            prefs.edit().clear().apply()
+            result.success(true)
+        } catch (e: Exception) {
+            result.error(
+                "CLEAR_ACCOUNT_ERROR",
+                "Failed to clear persisted account: ${e.localizedMessage}",
+                null
+            )
+        }
+    }
+
     private fun setPcaInitError(methodName: String, result: MethodChannel.Result) {
         result.error(
             "PCA_INIT",

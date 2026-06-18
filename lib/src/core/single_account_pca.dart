@@ -60,4 +60,23 @@ class SingleAccountPca extends PublicClientApplication {
       throw e.convertToMsalException();
     }
   }
+
+  /// Clears the persisted account from MSAL's local cache (Android only).
+  ///
+  /// Use this when the device enters a state where [signOut] fails because
+  /// the broker no longer recognizes the cached account, and [acquireToken]
+  /// throws a "current_account_mismatch" error. Calling this method removes
+  /// the stale account entry from SharedPreferences, allowing a fresh
+  /// interactive login.
+  ///
+  /// On iOS this is a no-op since the equivalent state does not occur.
+  Future<bool> clearPersistedAccount() async {
+    try {
+      final result =
+          await kMethodChannel.invokeMethod('clearPersistedAccount');
+      return result ?? true;
+    } on PlatformException catch (e) {
+      throw e.convertToMsalException();
+    }
+  }
 }
