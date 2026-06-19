@@ -69,7 +69,7 @@ class SingleAccountPca extends PublicClientApplication {
   /// the stale account entry from SharedPreferences, allowing a fresh
   /// interactive login.
   ///
-  /// On iOS this is a no-op since the equivalent state does not occur.
+  /// On iOS and macOS this is a no-op since the equivalent state does not occur.
   Future<bool> clearPersistedAccount() async {
     try {
       final result =

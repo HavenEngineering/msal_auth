@@ -86,6 +86,8 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
 
         case "signOut": signOut(result: result)
 
+        case "clearPersistedAccount": result(true)
+
         case "getAccount":
             guard let identifier = call.arguments as? String else {
                 setInternalError(methodName: call.method, result: result)
