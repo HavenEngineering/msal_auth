@@ -304,13 +304,6 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
     }
 
     /**
-     * Set the error for public client app is not initialized.
-     * This is a custom exception created at Dart side.
-     *
-     * @param methodName the name of the method called.
-     * @param result the result of the method call.
-     */
-    /**
      * Clears MSAL's persisted single account from SharedPreferences.
      * Resolves the "current_account_mismatch" dead loop when the broker
      * no longer recognizes the stale cached account.
@@ -336,6 +329,13 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
         }
     }
 
+    /**
+     * Set the error for public client app is not initialized.
+     * This is a custom exception created at Dart side.
+     *
+     * @param methodName the name of the method called.
+     * @param result the result of the method call.
+     */
     private fun setPcaInitError(methodName: String, result: MethodChannel.Result) {
         result.error(
             "PCA_INIT",
