@@ -79,8 +79,8 @@ void main() {
       return true;
     };
 
-    expect(
-      pca.clearPersistedAccount,
+    await expectLater(
+      pca.clearPersistedAccount(),
       throwsA(isA<MsalException>()),
     );
   });
