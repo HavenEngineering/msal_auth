@@ -64,6 +64,24 @@ void main() {
   });
 
   test(
+      'Given the native side returns null, '
+      'When clearPersistedAccount is called, '
+      'Then it returns false', () async {
+    final pca = await createPca();
+
+    handler = (call) {
+      if (call.method == 'clearPersistedAccount') {
+        return null;
+      }
+      return true;
+    };
+
+    final result = await pca.clearPersistedAccount();
+
+    expect(result, false);
+  });
+
+  test(
       'Given the native side throws, '
       'When clearPersistedAccount is called, '
       'Then it throws MsalException', () async {

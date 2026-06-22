@@ -73,8 +73,8 @@ class SingleAccountPca extends PublicClientApplication {
   Future<bool> clearPersistedAccount() async {
     try {
       final result =
-          await kMethodChannel.invokeMethod('clearPersistedAccount');
-      return result ?? true;
+          await kMethodChannel.invokeMethod<bool>('clearPersistedAccount');
+      return result ?? false;
     } on PlatformException catch (e) {
       throw e.convertToMsalException();
     }
