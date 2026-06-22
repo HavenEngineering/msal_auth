@@ -304,13 +304,17 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
     }
 
     /**
-     * Clears MSAL's persisted single account from SharedPreferences.
-     * Resolves the "current_account_mismatch" dead loop when the broker
-     * no longer recognizes the stale cached account.
+     * Removes only the current-account key from MSAL's SharedPreferences,
+     * leaving other persisted state (e.g. credential cache metadata) intact.
+     * Breaks the "current_account_mismatch" dead loop that occurs when the
+     * broker no longer recognizes the stale cached account.
      *
-     * The SharedPreferences name corresponds to
-     * [SingleAccountPublicClientApplication.SINGLE_ACCOUNT_CREDENTIAL_SHARED_PREFERENCES]
-     * which is a public constant in MSAL Android (verified in v6.0.1).
+     * Uses [SharedPreferences.Editor.commit] (synchronous) so the result
+     * reflects whether the write actually succeeded.
+     *
+     * References:
+     * - [SingleAccountPublicClientApplication.SINGLE_ACCOUNT_CREDENTIAL_SHARED_PREFERENCES]
+     * - [SingleAccountPublicClientApplication.CURRENT_ACCOUNT_SHARED_PREFERENCE_KEY]
      *
      * @see <a href="https://github.com/AzureAD/microsoft-authentication-library-for-android/blob/master/msal/src/main/java/com/microsoft/identity/client/SingleAccountPublicClientApplication.java">SingleAccountPublicClientApplication source</a>
      */
@@ -318,8 +322,19 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
         try {
             val prefsName = SingleAccountPublicClientApplication.SINGLE_ACCOUNT_CREDENTIAL_SHARED_PREFERENCES
             val prefs = msal.context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-            prefs.edit().clear().apply()
-            result.success(true)
+            val cleared = prefs.edit()
+                .remove(SingleAccountPublicClientApplication.CURRENT_ACCOUNT_SHARED_PREFERENCE_KEY)
+                .commit()
+
+            if (cleared) {
+                result.success(true)
+            } else {
+                result.error(
+                    "CLEAR_ACCOUNT_ERROR",
+                    "Failed to persist account removal",
+                    null
+                )
+            }
         } catch (e: Exception) {
             result.error(
                 "CLEAR_ACCOUNT_ERROR",
