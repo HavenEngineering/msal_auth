@@ -338,7 +338,7 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
         } catch (e: Exception) {
             result.error(
                 "CLEAR_ACCOUNT_ERROR",
-                "Failed to clear persisted account: ${e.localizedMessage}",
+                "Failed to clear persisted account: ${e.localizedMessage ?: e.toString()}",
                 null
             )
         }
